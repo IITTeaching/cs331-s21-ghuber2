@@ -138,16 +138,7 @@ class ArrayList:
     def append(self, value):
         """Appends value to the end of this list."""
         ### BEGIN SOLUTION
-        if(self.len+1>len(self.data)):
-            temp=ConstrainedList((self.len+1)*2)
-            for i in range(self.len):
-                temp[i]=self.data[i]
-            temp[self.len]=value
-            self.data=temp
-            self.len+=1
-        else:
-            self.len+=1
-            self.data[self.len-1]=value
+        self.insert(self.len,value)
         
         ### END SOLUTION
 
@@ -176,11 +167,8 @@ class ArrayList:
         """Deletes and returns the element at idx (which is the last element,
         by default)."""
         ### BEGIN SOLUTION
-        idx=(self.len+idx)%self.len
         elem=self.data[idx]
-        for i in range(idx,self.len-1):
-            self.data[i]=self.data[i+1]
-        self.len-=1
+        del self[idx]
         return elem
         ### END SOLUTION
 
@@ -284,10 +272,8 @@ class ArrayList:
         of other."""
         ### BEGIN SOLUTION
         res=ArrayList()
-        for i in self:
-            res.append(i)
-        for i in other:
-            res.append(i)
+        res.extend(self)
+        res.extend(other)
         return res
         ### END SOLUTION
 
@@ -300,8 +286,7 @@ class ArrayList:
         contains the same values as this list."""
         ### BEGIN SOLUTION
         res=ArrayList()
-        for i in self:
-            res.append(i)
+        res.extend(self)
         return res
         ### END SOLUTION
 
