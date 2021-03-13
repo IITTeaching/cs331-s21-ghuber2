@@ -1,6 +1,5 @@
-import random
 from unittest import TestCase
-
+import random
 
 ################################################################################
 # Linked list class you should implement
@@ -144,6 +143,8 @@ class LinkedList:
         self.cursor.next.prior=self.cursor.prior
         self.cursor=self.cursor.next
         self.length-=1
+        if( self.length!=0 and self.cursor is self.head ):
+          self.cursor=self.cursor.next
         
         ### END SOLUTION
 
