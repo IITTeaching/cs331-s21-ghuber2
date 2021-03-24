@@ -4,6 +4,7 @@ from unittest import TestCase
 ################################################################################
 # STACK IMPLEMENTATION (DO NOT MODIFY THIS CODE)
 ################################################################################
+
 class Stack:
     class Node:
         def __init__(self, val, next=None):
@@ -51,6 +52,18 @@ def check_delimiters(expr):
     delim_closers = '})]>'
 
     ### BEGIN SOLUTION
+    stack=Stack()
+    for char in list(expr):
+        if char in delim_openers:
+            stack.push(char)
+        if char in delim_closers :
+            if not stack.empty() and delim_openers.index(stack.peek())==delim_closers.index(char):
+                stack.pop()
+            else:
+                return False
+        
+    return stack.empty()
+        
     ### END SOLUTION
 
 ################################################################################
@@ -120,7 +133,40 @@ def infix_to_postfix(expr):
     ops = Stack()
     postfix = []
     toks = expr.split()
+    top=ops.peek()
     ### BEGIN SOLUTION
+    for tok in toks:
+      flag=False
+      while not flag:
+        flag=True
+        top=ops.peek()
+        if tok.isdigit():
+          postfix.append(tok)
+        elif ops.empty() or ops.peek()=="(":
+          ops.push(tok)
+        elif tok=="(":
+          ops.push(tok)
+        elif tok ==")":
+          val=ops.pop()
+          while val!="(":
+            postfix.append(val)
+            val=ops.pop()
+        elif top in prec:
+          if prec[top]<prec[tok]:
+            ops.push(tok)
+          if prec[top]==prec[tok]:
+            postfix.append(ops.pop())
+            ops.push(tok)
+          if prec[top]>prec[tok]:
+            postfix.append(ops.pop())
+            flag=False
+        else:
+          print("elso")
+          ops.push(tok)
+        
+    while not ops.empty():
+      postfix.append(ops.pop())
+      
     ### END SOLUTION
     return ' '.join(postfix)
 
@@ -160,25 +206,66 @@ class Queue:
         self.data = [None] * limit
         self.head = -1
         self.tail = -1
+        
 
     ### BEGIN SOLUTION
     ### END SOLUTION
 
     def enqueue(self, val):
         ### BEGIN SOLUTION
+        
+        if self.tail-self.head+1==len(self.data):
+          raise RuntimeError
+        if(self.head==-1):
+          self.head=0
+        self.tail+=1
+        if self.tail>=len(self.data):
+          self.tail=0
+        if(self.data[self.tail]!=None):
+          raise RuntimeError
+        self.data[self.tail]=val
         ### END SOLUTION
 
     def dequeue(self):
         ### BEGIN SOLUTION
+        if self.head==len(self.data):
+          self.head=0
+        if self.tail==-1 and self.head==-1 :
+          raise RuntimeError
+        val=self.data[self.head]
+        self.data[self.head]=None
+        self.head+=1
+        if self.head-1==self.tail and not self.data[0] and len(self.data) == self.head:
+          self.head = -1
+          self.tail = -1
+        return val
+        
         ### END SOLUTION
 
     def resize(self, newsize):
         assert(len(self.data) < newsize)
         ### BEGIN SOLUTION
+        temp=[None]*newsize
+        idx=self.head
+        i=0
+        while self.data[idx]!=None and idx!=self.tail+1:
+          temp[i]=self.data[idx]
+          idx+=1
+          if idx==len(self.data):
+            idx=0
+          if(idx==self.head):
+            break
+          i+=1
+        self.data=temp
+        self.head=0
+        self.tail=i
+
         ### END SOLUTION
 
     def empty(self):
         ### BEGIN SOLUTION
+        return self.head>self.tail or (self.tail==self.head and self.tail==0) or (self.tail==self.head and self.data[self.tail]==None)
+
         ### END SOLUTION
 
     def __bool__(self):
@@ -194,6 +281,13 @@ class Queue:
 
     def __iter__(self):
         ### BEGIN SOLUTION
+        idx=self.head
+        while self.data[idx]!=None and idx!=self.tail+1:
+          yield(self.data[idx])
+          idx+=1
+          if idx==len(self.data):
+            idx=0
+
         ### END SOLUTION
 
 ################################################################################
@@ -212,7 +306,7 @@ def test_queue_implementation_1():
 
     with tc.assertRaises(RuntimeError):
         q.enqueue(5)
-
+    
     for i in range(5):
         tc.assertEqual(q.dequeue(), i)
 
