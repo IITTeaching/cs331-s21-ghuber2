@@ -1,5 +1,3 @@
-#changes
-
 from unittest import TestCase
 import random
 
@@ -53,6 +51,17 @@ class HBStree:
         KeyError, if key does not exist.
         """
         # BEGIN SOLUTION
+
+        node = self.get_current_root()
+        while node:
+          if node.val==key:
+            return node
+          if key>node.val:
+            node=node.right
+          elif key<node.val:
+            node=node.left
+        raise KeyError()
+
         # END SOLUTION
 
     def __contains__(self, el):
@@ -60,6 +69,11 @@ class HBStree:
         Return True if el exists in the current version of the tree.
         """
         # BEGIN SOLUTION
+        try:
+          _ = self[el]
+          return True
+        except KeyError:
+          return False
         # END SOLUTION
 
     def insert(self,key):
@@ -69,11 +83,96 @@ class HBStree:
         from creating a new version.
         """
         # BEGIN SOLUTION
+
+        root=self.get_current_root()
+        if not self.get_current_root():
+          left=None
+          right=None
+          self.root_versions.append(HBStree.INode(key,left,right))
+        else:
+          def insert_subtree(node):
+            if not node:
+              return HBStree.INode(key,None,None)
+            if key>node.val:
+              return HBStree.INode(node.val,node.left,insert_subtree(node.right))
+            if key<node.val:
+              return HBStree.INode(node.val,insert_subtree(node.left),node.right)
+            if key==node.val:
+              raise ValueError()
+          try:
+            self.root_versions.append(insert_subtree(root))
+          except ValueError:
+            pass
         # END SOLUTION
 
     def delete(self,key):
         """Delete key from the tree, creating a new version of the tree. If key does not exist in the current version of the tree, then do nothing and refrain from creating a new version."""
         # BEGIN SOLUTION
+        root=self.get_current_root()
+        if key not in self:
+          return
+        def findLargest(node):
+          while node.right:
+            node=node.right
+          return node
+        def findSmallest(node):
+          if not node.right:
+            return node
+          node=node.right
+          while node.left:
+            node=node.left
+          return node 
+        def insert_subtree(node,key):
+          if not node:
+            return HBStree.INode(key,None,None)
+          if key>node.val:
+            td=node.right
+            if key == td.val:
+              if not (td.left or td.right):
+                return HBStree.INode(node.val,node.left,None)
+              if td.left and td.right:
+                temp = findLargest(td.left)
+                insert = HBStree.INode(temp.val,insert_subtree(td.left,temp.val),td.right)
+                return HBStree.INode(node.val,node.left,insert)
+              if td.left:
+                insert = HBStree.INode(node.val,node.left,td.left)
+                return insert
+              if td.right:
+                insert = HBStree.INode(node.val,node.left,td.right)
+                return insert  
+            return HBStree.INode(node.val,node.left,insert_subtree(node.right,key))
+          if key<node.val:
+            td=node.left
+            if key == td.val:
+              if not (td.left or td.right):
+                return HBStree.INode(node.val,None,node.right)
+              if td.left and td.right:
+                temp = findLargest(td.left)
+                insert = HBStree.INode(temp.val,insert_subtree(td.left,temp.val),td.right)
+                return HBStree.INode(node.val,insert,node.right)
+              if td.left:
+                insert = HBStree.INode(node.val,td.left,node.right)
+                return insert
+              if td.right:
+                insert = HBStree.INode(node.val,td.right,node.right)
+                return insert
+            return HBStree.INode(node.val,insert_subtree(node.left,key),node.right)
+          if key==node.val:
+            td = node
+            if not (td.left or td.right):
+              return HBStree.INode(None,None,None)
+            if td.left and td.right:
+              temp = findLargest(td.left)
+              insert = HBStree.INode(temp.val,insert_subtree(td.left,temp.val),td.right)
+              return insert
+            if td.left:
+              return td.left
+            if td.right:
+              return td.right
+
+        self.root_versions.append(insert_subtree(root,key))
+        #print(self)
+        pass
         # END SOLUTION
 
     @staticmethod
@@ -145,6 +244,25 @@ class HBStree:
         if timetravel < 0 or timetravel >= len(self.root_versions):
             raise IndexError(f"valid versions for time travel are 0 to {len(self.root_versions) -1}, but was {timetravel}")
         # BEGIN SOLUTION
+        
+        root = self.root_versions[len(self.root_versions)-1-timetravel]
+       
+        elems = []
+        if not root:
+          return []
+        else:
+          def orderSubtree(node):
+            if not node:
+              return
+            if not node.left and not node.right:
+              elems.append(node.val)
+              #yield node.val
+            else:
+              orderSubtree(node.left)
+              elems.append(node.val)
+              orderSubtree(node.right)
+          orderSubtree(root)
+        return elems
         # END SOLUTION
 
     @staticmethod
