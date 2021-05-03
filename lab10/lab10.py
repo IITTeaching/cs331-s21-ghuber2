@@ -15,6 +15,9 @@ class AVLTree:
 
         def rotate_left(self):
             ### BEGIN SOLUTION
+            n = self.right
+            self.val, n.val = n.val, self.val
+            self.right, n.right, self.left, n.left = n.right, n.left, n, self.left
             ### END SOLUTION
 
         @staticmethod
@@ -31,16 +34,71 @@ class AVLTree:
     @staticmethod
     def rebalance(t):
         ### BEGIN SOLUTION
+        if not t:
+          return
+        hl=AVLTree.Node.height(t.left)
+        hr=AVLTree.Node.height(t.right)
+        if hl>1+hr:
+          if  t.left.right and (AVLTree.Node.height(t.left.left) if t.left.left else -1)<(AVLTree.Node.height(t.left.right) if t.left.right else -1):
+            t.left.rotate_left()
+          t.rotate_right()
+        elif hl+1<hr:
+          if t.right.left and (AVLTree.Node.height(t.right.left) if t.right.left else -1)>(AVLTree.Node.height(t.right.right) if t.right.right else -1):
+            t.right.rotate_right()
+          t.rotate_left()
         ### END SOLUTION
 
     def add(self, val):
         assert(val not in self)
-        ### BEGIN SOLUTION
+        ### BEGIN SOLUTION\
+        if not self.root:
+          self.root=AVLTree.Node(val)
+          return
+        def recursive_add(node):
+          if val>node.val:
+            if not node.right:
+              node.right=AVLTree.Node(val)
+            else:
+              recursive_add(node.right)
+          elif val<node.val:
+            if not node.left:
+              node.left=AVLTree.Node(val)
+            else:
+              recursive_add(node.left)
+          AVLTree.rebalance(node)
+        recursive_add(self.root)
+        AVLTree.rebalance(self.root)
         ### END SOLUTION
 
     def __delitem__(self, val):
         assert(val in self)
         ### BEGIN SOLUTION
+        def findLargest(node):
+          if node.right:
+            return findLargest(node.right)
+          else:
+            return node
+
+        def recursive_delete(node,val):
+          if val>node.val:
+            node.right=recursive_delete(node.right,val)
+          elif val<node.val:
+            node.left=recursive_delete(node.left,val)
+          else:
+            if node.right and node.left:
+              temp = findLargest(node.left)
+              node=AVLTree.Node(temp.val,node.left,node.right)
+              node.left = recursive_delete(node.left,temp.val)
+            elif node.right:
+              node = node.right
+            elif node.left:
+              node = node.left
+            else:
+              node = None
+          if node:
+            AVLTree.rebalance(node)
+          return node
+        self.root = recursive_delete(self.root,val)
         ### END SOLUTION
 
     def __contains__(self, val):
@@ -227,7 +285,8 @@ def main():
               test_lr_fix_simple,
               test_rl_fix_simple,
               test_key_order_after_ops,
-              test_stress_testing]:
+              test_stress_testing
+              ]:
         say_test(t)
         t()
         say_success()
