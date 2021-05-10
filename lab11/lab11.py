@@ -6,18 +6,50 @@ def quicksort(lst,pivot_fn):
 
 def qsort(lst,low,high,pivot_fn):
     ### BEGIN SOLUTION
+    if low<high:
+      if high-low == 1:
+        if lst[low]>lst[high]:
+          lst[low], lst[high] = lst[high], lst[low]
+        return
+      p = pivot_fn(lst,low,high)
+      #print(lst[low:high],p,low,high)
+      #partion code
+      start=low+1
+      end=high
+      pivot=lst[p]
+      lst[p], lst[low] = lst[low], lst[p]
+      #print (lst, pivot, low, high)
+      while start < end:
+        while start < len(lst) and lst[start] <= pivot:
+            start += 1
+        while lst[end] > pivot:
+            end -= 1
+        if(start < end):
+            lst[start], lst[end] = lst[end], lst[start]
+            #print("switched",lst[start],lst[end])
+
+      lst[end], lst[low] = lst[low], lst[end]
+      #print (lst, pivot)
+      qsort(lst,low,end-1,pivot_fn)
+      qsort(lst,end+1,high,pivot_fn)
+    
     ### END SOLUTION
 
 def pivot_first(lst,low,high):
     ### BEGIN SOLUTION
+    return low
     ### END SOLUTION
 
 def pivot_random(lst,low,high):
     ### BEGIN SOLUTION
+    return random.randint(low,high)
     ### END SOLUTION
 
 def pivot_median_of_three(lst,low,high):
     ### BEGIN SOLUTION
+    import statistics
+    res = statistics.median([lst[low], lst[(low + high) // 2], lst[high]])
+    return res
     ### END SOLUTION
 
 ################################################################################
@@ -38,10 +70,12 @@ def test_lists_with_pfn(pfn):
 
     lst = list(range(0,lstsize))
     quicksort(lst, pivot_first)
+    #print(lst)
     tc.assertEqual(lst,exp)
 
     lst = list(reversed(range(0,lstsize)))
     quicksort(lst, pivot_first)
+    #print(lst)
     tc.assertEqual(lst,exp)
 
     for i in range(0,100):
